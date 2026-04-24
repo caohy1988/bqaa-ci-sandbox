@@ -12,4 +12,7 @@ driven entirely by what the demo agent emitted to BigQuery, not by
 anything in this file.
 """
 
+# Path the sandbox agent reads its instruction from. Baseline is
+# deliberately two-sentence-short; the regressed variant lives on
+# a separate branch and adds a policy block plus few-shot examples.
 PROMPT_PATH = "prompts/calendar_assistant.txt"

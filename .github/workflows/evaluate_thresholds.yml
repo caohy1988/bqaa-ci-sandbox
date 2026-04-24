@@ -12,20 +12,6 @@
 # Requires bigquery-agent-analytics >= 0.2.2 — the first release
 # with the raw-budget `--threshold` semantics and the tight
 # `--exit-code` failure output this workflow depends on.
-#
-# To adopt this workflow in your own agent repo:
-#   1. Copy this file to .github/workflows/evaluate_thresholds.yml.
-#   2. Set repo variables PROJECT_ID and DATASET_ID to the GCP
-#      project + BigQuery dataset where your agent_events table
-#      lives.
-#   3. Set the repo secret GCP_SA_KEY to a service account JSON
-#      with bigquery.jobUser + bigquery.dataViewer on the dataset.
-#   4. Replace `calendar_assistant` with your agent's name in all
-#      four --agent-id flags.
-#   5. Tune the four --threshold numbers against your own
-#      production distribution. A defensible starting point for
-#      each is "p95 of last 30 days + 10% buffer"; revisit after
-#      week one of CI gating.
 
 name: Agent quality gate
 
@@ -45,15 +31,15 @@ jobs:
       - run: pip install 'bigquery-agent-analytics>=0.2.2,<0.3.0'
       - uses: google-github-actions/auth@v2
         with: { credentials_json: '${{ secrets.GCP_SA_KEY }}' }
-      - name: Latency budget
+      - name: Token budget
         run: >
-          bq-agent-sdk evaluate --evaluator=latency --threshold=5000
+          bq-agent-sdk evaluate --evaluator=token_efficiency --threshold=5000
           --last=24h --agent-id=calendar_assistant --exit-code
           --project-id=${{ vars.PROJECT_ID }}
           --dataset-id=${{ vars.DATASET_ID }}
-      - name: Token budget
+      - name: Latency budget
         run: >
-          bq-agent-sdk evaluate --evaluator=token_efficiency --threshold=50000
+          bq-agent-sdk evaluate --evaluator=latency --threshold=5000
           --last=24h --agent-id=calendar_assistant --exit-code
           --project-id=${{ vars.PROJECT_ID }}
           --dataset-id=${{ vars.DATASET_ID }}

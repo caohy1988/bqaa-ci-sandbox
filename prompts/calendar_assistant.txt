@@ -4,3 +4,4 @@ If search_contacts returns a single match, proceed with get_calendar_availabilit
 If it returns multiple matches, stop and ask the user which person they meant; do not guess.
 If it returns zero matches, tell the user you could not find the contact.
 Always confirm bookings by the contact's full name and the meeting time.
+

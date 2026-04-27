@@ -32,6 +32,19 @@ jobs:
       - run: pip install 'bigquery-agent-analytics>=0.2.3,<0.3.0'
       - uses: google-github-actions/auth@v2
         with: { credentials_json: '${{ secrets.GCP_SA_KEY }}' }
+      # Semantic gate. Runs first so its red status (with the
+      # judge's justification snippet) is the most visible part of
+      # any failing PR run — that's the post #3 differentiator
+      # versus the deterministic budgets below. Bills Vertex AI
+      # inference per call; safe to scope by --agent-id and
+      # --last to keep costs bounded on every PR.
+      - name: Hallucination judge
+        run: >
+          bq-agent-sdk evaluate --evaluator=llm-judge
+          --criterion=hallucination --threshold=0.7
+          --last=24h --agent-id=calendar_assistant --exit-code
+          --project-id=${{ vars.PROJECT_ID }}
+          --dataset-id=${{ vars.DATASET_ID }}
       - name: Token budget
         run: >
           bq-agent-sdk evaluate --evaluator=token_efficiency --threshold=5000
@@ -53,19 +66,6 @@ jobs:
       - name: Turn count
         run: >
           bq-agent-sdk evaluate --evaluator=turn_count --threshold=10
-          --last=24h --agent-id=calendar_assistant --exit-code
-          --project-id=${{ vars.PROJECT_ID }}
-          --dataset-id=${{ vars.DATASET_ID }}
-      # Semantic gate. Catches regressions the deterministic
-      # budgets above can't see: agent outputs that are within
-      # latency/token budgets but fabricate details not supported
-      # by the tool results. Bills Vertex AI inference per call;
-      # safe to scope by --agent-id and --last to keep costs
-      # bounded on every PR.
-      - name: Hallucination judge
-        run: >
-          bq-agent-sdk evaluate --evaluator=llm-judge
-          --criterion=hallucination --threshold=0.7
           --last=24h --agent-id=calendar_assistant --exit-code
           --project-id=${{ vars.PROJECT_ID }}
           --dataset-id=${{ vars.DATASET_ID }}

@@ -1,13 +1,11 @@
 # bqaa-ci-sandbox
 
-Sandbox repo demoing the CI quality gate from Medium post #2:
-["Your Agent Events Table Is Also a Test Suite"](https://github.com/haiyuan-eng-google/bigquery-agent-analytics-blogpost/pull/17).
+Sandbox repo behind the CI evidence in two Medium posts:
 
-Every PR that touches `agents/**` or `prompts/**` runs
-`bq-agent-sdk evaluate --exit-code` against the last 24 hours of
-traces in a sandbox BigQuery dataset, fanned across four budgets
-(latency, token usage, tool error rate, turn count). A red PR
-status means at least one session blew a budget.
+- **Post #2** — *[Track Every AI Agent Interaction with One CLI Flag](https://medium.com/google-cloud/track-every-ai-agent-interaction-with-one-cli-flag-cae20ffa5100)* — the budget-based gate (`bq-agent-sdk evaluate --exit-code` on latency, token usage, tool error rate, turn count).
+- **Post #3** — *[Scalable LLM-as-Judge: Automating Agent Evaluation Directly in BigQuery](https://medium.com/google-cloud/scalable-llm-as-judge-automating-agent-evaluation-directly-in-bigquery-302ca4acf19f)* — the same workflow, extended with `LLMAsJudge.faithfulness(strict=True)` to catch the things a budget can't (hallucinations, off-topic answers, ungrounded claims). The red GHA run referenced in post #3 came from this repo.
+
+Every PR that touches `agents/**` or `prompts/**` runs `bq-agent-sdk evaluate --exit-code` against the last 24 hours of traces in a sandbox BigQuery dataset. A red PR status means at least one session blew a budget or failed a judge.
 
 - **Workflow** — [`.github/workflows/evaluate_thresholds.yml`](.github/workflows/evaluate_thresholds.yml)
 - **Baseline prompt** — [`prompts/calendar_assistant.txt`](prompts/calendar_assistant.txt)
